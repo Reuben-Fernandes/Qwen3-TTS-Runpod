@@ -6,7 +6,6 @@
 set -e
 
 COMFYUI_DIR=/workspace/ComfyUI
-VENV_PYTHON="/workspace/venv/bin/python"
 MIRROR="ReubenF10/ComfyUI-Models"
 
 echo ""
@@ -26,7 +25,7 @@ export HF_HUB_ENABLE_HF_TRANSFER=1
 # ── Download Models ──────────────────────────────────────────────
 echo "  → Checking models..."
 
-$VENV_PYTHON << EOF
+python3 << EOF
 import os, shutil
 from huggingface_hub import hf_hub_download
 
@@ -65,20 +64,9 @@ print("")
 print("✓ All models ready")
 EOF
 
-# ── Launch Jupyter Lab ───────────────────────────────────────────
-echo "  → Starting Jupyter Lab on port 8888..."
-/workspace/venv/bin/jupyter lab \
-    --ip=0.0.0.0 \
-    --port=8888 \
-    --no-browser \
-    --allow-root \
-    --NotebookApp.token='' \
-    --NotebookApp.password='' \
-    > /workspace/jupyter.log 2>&1 &
-
 # ── Launch ComfyUI ───────────────────────────────────────────────
 echo "  → Launching ComfyUI on port 8188..."
 echo ""
-exec $VENV_PYTHON "$COMFYUI_DIR/main.py" \
+exec python3.12 "$COMFYUI_DIR/main.py" \
     --listen 0.0.0.0 \
     --port 8188
