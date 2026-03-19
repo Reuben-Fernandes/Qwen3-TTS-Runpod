@@ -1,43 +1,32 @@
 # ── Base ─────────────────────────────────────────────────────────
-FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu24.04
+FROM runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404
 
-ENV DEBIAN_FRONTEND=noninteractive
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
+ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /workspace
 
 # ── System Dependencies ──────────────────────────────────────────
 RUN apt-get update -qq && \
     apt-get install -y --no-install-recommends \
-        python3.12 \
-        python3.12-venv \
-        python3-pip \
         git \
         git-lfs \
         ffmpeg \
         libgl1 \
         libglib2.0-0 \
-        curl \
-        wget \
     && rm -rf /var/lib/apt/lists/*
-
-# ── Python venv ──────────────────────────────────────────────────
-RUN python3.12 -m venv /workspace/venv
-ENV PATH="/workspace/venv/bin:$PATH"
-
-RUN pip install --upgrade pip --quiet
-
-# ── PyTorch (cu124, lightweight) ─────────────────────────────────
-RUN pip install torch torchvision torchaudio \
-    --index-url https://download.pytorch.org/whl/cu124 \
-    --quiet
 
 # ── ComfyUI ──────────────────────────────────────────────────────
 RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI
-RUN pip install -r /workspace/ComfyUI/requirements.txt --quiet
+
+WORKDIR /workspace/ComfyUI
+
+RUN python3 -m venv .venv && \
+    .venv/bin/pip install --upgrade pip --quiet && \
+    .venv/bin/pip install -r requirements.txt --quiet
 
 # ── Python Dependencies ──────────────────────────────────────────
-RUN pip install \
+RUN .venv/bin/pip install \
     "huggingface_hub[cli]" \
     hf_transfer \
     "transformers==4.57.3" \
@@ -53,7 +42,7 @@ RUN cd /workspace/ComfyUI/custom_nodes && \
 
 RUN for dir in /workspace/ComfyUI/custom_nodes/*/; do \
         if [ -f "$dir/requirements.txt" ]; then \
-            pip install -r "$dir/requirements.txt" --quiet || true; \
+            /workspace/ComfyUI/.venv/bin/pip install -r "$dir/requirements.txt" --quiet || true; \
         fi \
     done
 
