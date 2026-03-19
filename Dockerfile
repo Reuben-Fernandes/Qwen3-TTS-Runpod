@@ -1,27 +1,59 @@
 # ── Base ─────────────────────────────────────────────────────────
-FROM runpod/comfyui:latest
+FROM nvidia/cuda:12.4.1-runtime-ubuntu24.04
 
-ENV HF_HUB_ENABLE_HF_TRANSFER=1
 ENV DEBIAN_FRONTEND=noninteractive
+ENV HF_HUB_ENABLE_HF_TRANSFER=1
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /workspace
 
+# ── System Dependencies ──────────────────────────────────────────
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends \
+        python3.12 \
+        python3.12-venv \
+        python3-pip \
+        python3.12-dev \
+        git \
+        git-lfs \
+        ffmpeg \
+        curl \
+        wget \
+        libgl1 \
+        libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED
+
+# ── Python Setup ─────────────────────────────────────────────────
+RUN python3.12 -m pip install --upgrade pip --quiet
+
+# ── PyTorch ──────────────────────────────────────────────────────
+RUN pip install torch torchvision torchaudio \
+    --index-url https://download.pytorch.org/whl/cu124 \
+    --quiet
+
+# ── ComfyUI ──────────────────────────────────────────────────────
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI
+RUN pip install -r /workspace/ComfyUI/requirements.txt --quiet
+
 # ── Python Dependencies ──────────────────────────────────────────
-# transformers pinned for Qwen TTS compatibility
 RUN pip install \
     "huggingface_hub[cli]" \
     hf_transfer \
     "transformers==4.57.3" \
+    librosa \
+    accelerate \
+    jupyter \
     --quiet
 
 # ── Custom Nodes ─────────────────────────────────────────────────
-RUN cd /workspace/runpod-slim/ComfyUI/custom_nodes && \
-    git clone https://github.com/city96/ComfyUI-GGUF && \
+RUN cd /workspace/ComfyUI/custom_nodes && \
+    git clone https://github.com/ltdrdata/ComfyUI-Manager && \
     git clone https://github.com/kijai/ComfyUI-KJNodes && \
     git clone https://github.com/LAOGOU-666/ComfyUI-LG_SamplingUtils && \
     git clone https://github.com/flybirdxx/ComfyUI-Qwen-TTS
 
-RUN for dir in /workspace/runpod-slim/ComfyUI/custom_nodes/*/; do \
+RUN for dir in /workspace/ComfyUI/custom_nodes/*/; do \
         if [ -f "$dir/requirements.txt" ]; then \
             pip install -r "$dir/requirements.txt" --quiet || true; \
         fi \
