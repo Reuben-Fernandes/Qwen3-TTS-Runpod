@@ -1,5 +1,5 @@
 # ── Base ─────────────────────────────────────────────────────────
-FROM nvidia/cuda:12.4.1-runtime-ubuntu24.04
+FROM nvidia/cuda:12.6.0-runtime-ubuntu24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV HF_HUB_ENABLE_HF_TRANSFER=1
@@ -29,7 +29,7 @@ RUN python3.12 -m pip install --upgrade pip --quiet
 
 # ── PyTorch ──────────────────────────────────────────────────────
 RUN pip install torch torchvision torchaudio \
-    --index-url https://download.pytorch.org/whl/cu124 \
+    --index-url https://download.pytorch.org/whl/cu126 \
     --quiet
 
 # ── ComfyUI ──────────────────────────────────────────────────────
