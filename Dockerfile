@@ -25,7 +25,7 @@ RUN apt-get update -qq && \
     && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED
 
 # ── Python Setup ─────────────────────────────────────────────────
-RUN python3.12 -m pip install --upgrade pip --quiet
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py && python3.12 /tmp/get-pip.py && rm /tmp/get-pip.py && python3.12 -m pip install --upgrade pip --quiet
 
 # ── PyTorch ──────────────────────────────────────────────────────
 RUN pip install torch torchvision torchaudio \
