@@ -67,6 +67,6 @@ EOF
 # ── Launch ComfyUI ───────────────────────────────────────────────
 echo "  → Launching ComfyUI on port 8188..."
 echo ""
-exec python3.12 "$COMFYUI_DIR/main.py" \
+exec python "$COMFYUI_DIR/main.py" \
     --listen 0.0.0.0 \
     --port 8188
