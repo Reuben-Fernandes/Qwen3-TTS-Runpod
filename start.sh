@@ -25,7 +25,7 @@ export HF_HUB_ENABLE_HF_TRANSFER=1
 # ── Download Models ──────────────────────────────────────────────
 echo "  → Checking models..."
 
-python3 << EOF
+python3 << PYEOF
 import os, shutil
 from huggingface_hub import hf_hub_download
 
@@ -62,11 +62,17 @@ for filename, dest_folder in models:
 
 print("")
 print("✓ All models ready")
-EOF
+PYEOF
+
+# ── Download Workflows ───────────────────────────────────────────
+echo "  → Downloading workflows..."
+mkdir -p "$COMFYUI_DIR/user/default/workflows"
+curl -fsSL https://raw.githubusercontent.com/Reuben-Fernandes/ComfyUI-Workflows/main/Qwen3-TTS.json \
+    -o "$COMFYUI_DIR/user/default/workflows/Qwen3-TTS.json" && echo "  ✓ Qwen3-TTS.json" || true
 
 # ── Launch ComfyUI ───────────────────────────────────────────────
 echo "  → Launching ComfyUI on port 8188..."
 echo ""
-exec python "$COMFYUI_DIR/main.py" \
+exec python3 "$COMFYUI_DIR/main.py" \
     --listen 0.0.0.0 \
     --port 8188
